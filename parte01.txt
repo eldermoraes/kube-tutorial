@@ -1,0 +1,147 @@
+CONECTE-SE NO SEU CLUSTER
+oc login ???
+
+
+NAMESPACE
+
+kubectl create namespace kubetutorial
+oc project kubetutorial
+
+NAKED POD
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demo-quarkus
+spec:
+  containers:
+  - name: demo-quarkus
+    image: eldermoraes/demo-quarkus:1.0-SNAPSHOT
+EOF
+
+watch kubectl get pods
+kubectl delete pod demo-quarkus
+
+
+REPLICASET
+
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+    name: demo-quarkus-rs
+spec:
+    replicas: 1
+    selector:
+       matchLabels:
+          app: demo-quarkus
+    template:
+       metadata:
+          labels:
+             app: demo-quarkus
+             env: dev
+       spec:
+          containers:
+          - name: demo-quarkus
+            image: eldermoraes/demo-quarkus:1.0-SNAPSHOT
+EOF
+
+watch kubectl get pods
+kubectl delete pod quarkus-demo-rs[restante do nome]
+kubectl delete rs demo-quarkus-rs
+
+DEPLOYMENT
+
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-quarkus-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-quarkus
+  template:
+    metadata:
+      labels:
+        app: demo-quarkus
+        env: dev
+    spec:
+      containers:
+      - name: demo-quarkus
+        image: eldermoraes/demo-quarkus:1.0-SNAPSHOT
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+EOF
+
+watch kubectl get pods
+kubectl get rs
+kubectl get deploy
+kubectl expose deployment demo-quarkus-deploy --port=8080 --type=LoadBalancer
+oc expose svc demo-quarkus-deploy
+kubectl get routes
+
+while true
+do curl [DNS]/hello
+sleep .3
+done
+
+kubectl scale deployment demo-quarkus-deploy --replicas=3
+kubectl set image deployment/demo-quarkus-deploy demo-quarkus=eldermoraes/demo-quarkus:2.0-SNAPSHOT
+kubectl get rs
+kubectl set image deployment/demo-quarkus-deploy demo-quarkus=eldermoraes/demo-quarkus:1.0-SNAPSHOT
+
+SERVICE
+
+kubectl delete svc demo-quarkus-deploy
+kubectl delete route demo-quarkus-deploy
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-quarkus-svc
+spec:
+  selector:
+    app: demo-quarkus
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+EOF
+
+kubectl get svc
+oc expose svc demo-quarkus-svc
+kubectl delete route demo-quarkus-svc
+
+cat <<EOF | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demo-quarkus-ingress
+  namespace: eldermoraes-dev
+spec:
+  rules:
+    - host: demo-quarkus.[apps.sandbox-m2.ll9k.p1.openshiftapps.com]
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: demo-quarkus-svc
+                port:
+                  number: 80
+EOF
+
+curl demo-quarkus.apps.sandbox-m2.ll9k.p1.openshiftapps.com
+
+
+LOGS
+
+kubectl logs [nome do pod] -f
+stern demo-quarkus-deploy
