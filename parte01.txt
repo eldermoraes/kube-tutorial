@@ -126,7 +126,7 @@ metadata:
   namespace: eldermoraes-dev
 spec:
   rules:
-    - host: demo-quarkus.[apps.sandbox-m2.ll9k.p1.openshiftapps.com]
+    - host: demo-quarkus.apps.sandbox-m2.ll9k.p1.openshiftapps.com
       http:
         paths:
           - path: /
