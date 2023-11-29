@@ -123,10 +123,10 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: demo-quarkus-ingress
-  namespace: eldermoraes-dev
+  namespace: [seu-namespace]]
 spec:
   rules:
-    - host: demo-quarkus.apps.sandbox-m2.ll9k.p1.openshiftapps.com
+    - host: demo-quarkus.apps.sandbox-m2.ll9k.p1.openshiftapps.com # ajuste para o seu host
       http:
         paths:
           - path: /
@@ -138,7 +138,7 @@ spec:
                   number: 80
 EOF
 
-curl demo-quarkus.apps.sandbox-m2.ll9k.p1.openshiftapps.com
+curl demo-quarkus.apps.sandbox-m2.ll9k.p1.openshiftapps.com # ajuste para o seu host
 
 
 LOGS

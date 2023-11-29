@@ -1,0 +1,129 @@
+Requests and limits
+
+Deploy comum
+
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: demo-quarkus
+  name: demo-quarkus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-quarkus
+  template:
+    metadata:
+      labels:
+        app: demo-quarkus
+    spec:
+      containers:
+      - name: demo-quarkus
+        image: eldermoraes/demo-quarkus:1.0-SNAPSHOT
+        ports:
+          - containerPort: 8080
+EOF
+
+Deploy requisitando recursos malucos
+
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: demo-quarkus
+  name: demo-quarkus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-quarkus
+  template:
+    metadata:
+      labels:
+        app: demo-quarkus
+    spec:
+      containers:
+      - name: demo-quarkus
+        image: eldermoraes/demo-quarkus:1.0-SNAPSHOT
+        ports:
+          - containerPort: 8080
+        resources:
+          requests: 
+            memory: "300Mi" 
+            cpu: "40000m" # 40 cores
+EOF
+
+Deploy definindo requests e limits sensatos
+
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: demo-quarkus
+  name: demo-quarkus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-quarkus
+  template:
+    metadata:
+      labels:
+        app: demo-quarkus
+    spec:
+      containers:
+      - name: demo-quarkus
+        image: eldermoraes/demo-quarkus:1.0-SNAPSHOT
+        ports:
+          - containerPort: 8080
+        resources:
+          requests: 
+            memory: "100Mi" 
+            cpu: "250m" # 1/4 cores
+          limits: 
+            memory: "200Mi" 
+            cpu: "500m" # 1/2 cores
+EOF
+
+Rolling updates
+
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-quarkus-svc
+spec:
+  selector:
+    app: demo-quarkus
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+EOF
+
+oc expose svc demo-quarkus-svc
+kubectl get routes
+
+Loop na rota
+
+kubectl describe deployment demo-quarkus
+
+kubectl scale deployment demo-quarkus --replicas=3
+
+export KUBE_EDITOR="code -w"
+
+kubectl edit deployment demo-quarkus
+
+Mudar para eldermoraes/demo-quarkus:2.0-SNAPSHOT
+
+kubectl rollout status deployment demo-quarkus
+
+kubectl rollout history deployment/demo-quarkus
+
+kubectl rollout undo deployment/demo-quarkus --to-revision=1
